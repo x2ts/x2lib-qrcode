@@ -6,7 +6,7 @@
  * Time: PM1:10
  */
 
-namespace x2lib\qrcode\QRCode;
+namespace x2lib\qrcode;
 
 use PHPQRCode\QRcode as PhpQRcode;
 use x2ts\Component;

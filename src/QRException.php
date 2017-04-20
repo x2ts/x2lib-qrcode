@@ -6,7 +6,7 @@
  * Time: PM1:12
  */
 
-namespace x2lib\qrcode\QRCode;
+namespace x2lib\qrcode;
 
 
 class QRException extends \Exception {

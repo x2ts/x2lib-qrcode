@@ -10,13 +10,21 @@ namespace x2lib\qrcode;
 
 use PHPQRCode\QRcode as PhpQRcode;
 use x2ts\Component;
+use x2ts\ComponentFactory as X;
 use x2ts\Toolkit;
 
+/**
+ * Class QRCode
+ *
+ * @package x2lib\qrcode
+ */
 class QRCode extends Component {
     protected static $_conf = [
-        'size'   => 10,
-        'margin' => 4,
-        'level'  => 1,
+        'size'     => 10,
+        'margin'   => 4,
+        'level'    => 1,
+        'cacheId'  => 'cache',
+        'duration' => 900,
     ];
 
     private $useCache = false;
@@ -26,7 +34,35 @@ class QRCode extends Component {
         return $this;
     }
 
+    /**
+     * @return bool|\x2ts\cache\ICache
+     * @throws \x2ts\ComponentNotFoundException
+     * @throws \InvalidArgumentException
+     */
+    private function getCache() {
+        return X::getComponent($this->conf['cacheId']);
+    }
+
+    private function cacheKey(string $url, $iconFile) {
+        return md5("$url:$iconFile:" . serialize($this->conf));
+    }
+
     public function png(string $url, $iconFile = null) {
+        $key = $this->cacheKey($url, $iconFile);
+        if ($this->useCache) {
+            $etag = X::router()->action->header('If-None-Match', '');
+            if ($etag === "W/$key") {
+                X::router()->action->setHeader('ETag', "W/$key", true, 304);
+                return;
+            }
+
+            X::router()->action->setHeader('ETag', "W/$key", true);
+            if ($png = $this->getCache()->get("qr:$key")) {
+                X::router()->action->setHeader('Content-Type', 'image/png', true)->out($png);
+                return;
+            }
+            ob_start();
+        }
         if (!empty($iconFile)) {
             ob_start();
         }
@@ -77,6 +113,12 @@ class QRCode extends Component {
             imagedestroy($icon);
             imagedestroy($qrCode);
             imagedestroy($qr);
+        }
+        if ($this->useCache) {
+            $png = ob_get_contents();
+            ob_clean();
+            $this->getCache()->set("qr:$key", $png, $this->conf['duration']);
+            X::router()->action->setHeader('Content-Type', 'image/png', true)->out($png);
         }
     }
 

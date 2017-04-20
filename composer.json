@@ -1,0 +1,21 @@
+{
+  "name": "x2ts/x2lib-qrcode",
+  "description": "QRCode wrapper for x2ts",
+  "type": "library",
+  "license": "LGPL-3.0",
+  "authors": [
+    {
+      "name": "TingSong-Syu",
+      "email": "rek@rek.me"
+    }
+  ],
+  "require": {
+    "x2ts/x2ts": "^2.0",
+    "aferrandini/phpqrcode": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "x2lib\\qrcode\\": "src"
+    }
+  }
+}
